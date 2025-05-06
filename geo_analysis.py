@@ -181,7 +181,8 @@ def gather_aligned_word_vectors(cleaned_raw, cleaned_gpt, cleaned_bt_zh, cleaned
         ratio_gpt = oov_count_gpt / total_gpt if total_gpt > 0 else 0
         ratio_bt_zh = oov_count_bt_zh / total_bt_zh if total_bt_zh > 0 else 0
         ratio_bt_de = oov_count_bt_de / total_bt_de if total_bt_de > 0 else 0
-        
+
+        # append sentences only if all dataset variant pass the OOV filtering
         if (vec_orig.size > 0 and vec_gpt.size > 0 and vec_bt_zh.size > 0 and vec_bt_de.size > 0 and 
             ratio_orig <= threshold and ratio_gpt <= threshold and ratio_bt_zh <= threshold and ratio_bt_de <= threshold):
             aligned_raw.append(vec_orig)
@@ -220,7 +221,7 @@ def gather_aligned_word_vectors(cleaned_raw, cleaned_gpt, cleaned_bt_zh, cleaned
 
 # 2-Wasserstein distance 
 def compute_multivariate_wasserstein(X, Y, sample_size=10000):
-    # Downsample if necessary
+    # subsetting for computational effiency 
     if X.shape[0] > sample_size:
         X = X[:sample_size]        
     if Y.shape[0] > sample_size:
@@ -275,7 +276,7 @@ def plot_delaunay(points, color='gray'):
             plt.plot(points[simplex, 0], points[simplex, 1], color=color, linewidth=1, alpha=0.7)
      
 def convex_hull_metrics(points):
-    """Calculate shape metrics for a point cloud using its convex hull."""
+    """calculate shape metrics for a point space using its convex hull."""
     if len(points) < 3:
         return {}  # Not enough points for meaningful hull
     
@@ -295,8 +296,8 @@ def convex_hull_metrics(points):
     return metrics
 
 # generalized convex hull metrics for higher PCA dimensions
+# if the pca >= 3
 def convex_hull_metrics_general(points, pca_components=3):
-    """Calculate convex hull metrics for 3D data: volume, surface area, and number of vertices."""
     if len(points) < pca_components:
         return {}
     hull = ConvexHull(points, qhull_options="QJ")
@@ -320,7 +321,7 @@ def delaunay_avg_edge_length(points):
     return avg_length 
         
 def distribution_distance(orig_points, aug_points):
-    """Compare shape metrics between original and augmented distributions."""
+    """compare shape metrics between original and augmented distributions."""
     comparison = {}
     d = orig_points.shape[1]
     
@@ -361,7 +362,7 @@ def distribution_distance(orig_points, aug_points):
     return comparison
 
 def plot_metrics_comparison(metrics_dict, title):
-    """Visualize metrics using bar chart."""
+    """visualize metrics using bar chart."""
     plt.figure(figsize=(12, 6))
     labels = list(metrics_dict.keys())
     values = list(metrics_dict.values())
